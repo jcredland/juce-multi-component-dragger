@@ -191,51 +191,7 @@ public:
     }
 
 private:
-    class Guides
-    :
-    public Component
-    {
-    public:
-        Guides() { setInterceptsMouseClicks(false, false); }
-        
-        void setGuidePosition(const Rectangle<int> & sourceComponentBounds)
-        {
-            x1 = sourceComponentBounds.getX();
-            x2 = sourceComponentBounds.getRight();
-            y1 = sourceComponentBounds.getY();
-            y2 = sourceComponentBounds.getBottom();
-        }
-        
-        void paint(Graphics & g)
-        {
-            g.setColour(Colours::grey.withAlpha(0.4f));
-            g.drawHorizontalLine(y1, 0.0f, (float)getWidth());
-            g.drawHorizontalLine(y2, 0.0f, (float)getWidth());
-            g.drawVerticalLine(x1, 0.0f, (float)getHeight());
-            g.drawVerticalLine(x2, 0.0f, (float)getHeight());
 
-        }
-    private:
-        int x1 {0};
-        int y1 {0};
-
-        int x2 {0};
-        int y2 {0};
-    };
-    
-    void removeGuides() { guides = nullptr; }
-    
-    void showGuides(const Rectangle<int> area)
-    {
-        auto parent = componentBeingDragged->getParentComponent();
-        
-        guides = new Guides();
-        guides->setGuidePosition(area);
-
-        parent->addAndMakeVisible(guides);
-        guides->setBounds(parent->getLocalBounds());
-    }
-    
     Rectangle<int> getAreaOfSelectedComponents()
     {
         if (selectedComponents.size() == 0)
@@ -256,9 +212,6 @@ private:
     {
         if (shiftConstrainsDirection && e.mods.isShiftDown())
         {
-            if (!guides && shiftShowsGuides)
-                showGuides(areaOfAllComponentsAtDragStart);
-
             /* xy > 0 == movement mainly X direction, xy < 0 == movement mainly Y direction. */
             int xy = abs(totalDragDelta.x + delta.x) - abs(totalDragDelta.y + delta.y);
 
@@ -293,8 +246,6 @@ private:
         {
             constrainedDirection = noConstraint;
 
-            if (guides)
-                removeGuides();
         }
     }
 
@@ -344,8 +295,6 @@ private:
     std::vector<WeakReference<Component>> selectedComponents;
     Component * componentBeingDragged { nullptr };
     
-    ScopedPointer<Guides> guides;
-
     BorderSize<int> amountPermittedOffscreen;
 };
 
