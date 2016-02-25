@@ -19,7 +19,7 @@ class MultiComponentDraggerDemo : public Component
 public:
     MultiComponentDraggerDemo()
     {
-        dragger.setShiftConstrainsDirection(true, true);
+        dragger.setShiftConstrainsDirection(true);
         dragger.setConstrainBoundsToParent(true, {0, 0, 10, 10} /* amount permitted offscreen. */);
 
         Random random;

@@ -30,7 +30,8 @@
  * Using: see handleMouseUp, handleMouseDown and handleMouseDrag
  *
  * You will probably also want to check isSelected() in your objects paint(Graphics &)
- * routine and ensure selected objects are highlighted.
+ * routine and ensure selected objects are highlighted.  Repaints are triggered
+ * automatically if the selection status changes.
  *
  * @TODO: Add 'grid' support.
  */
@@ -106,6 +107,8 @@ public:
      */
     void handleMouseDown (Component* component, const MouseEvent & e)
     {
+        jassert (component != nullptr);
+
         if (! isSelected(component))
         {
             if (! (e.mods.isShiftDown() || e.mods.isCommandDown()))
@@ -115,7 +118,14 @@ public:
             didJustSelect = true;
         }
         
-        startDragging(component, e);
+        if (component != nullptr)
+            mouseDownWithinTarget = e.getEventRelativeTo (component).getMouseDownPosition();
+
+        componentBeingDragged = component;
+
+        totalDragDelta = {0, 0};
+
+        constrainedDirection = noConstraint;
         
         component->repaint();
     }
@@ -134,8 +144,6 @@ public:
         didJustSelect = false;
         
         component->repaint();
-        
-        removeGuides();
     }
 
     /**
@@ -205,8 +213,6 @@ private:
         return a;
     }
 
-    const int minimumMovementToStartDrag = 10;
-
 
     void applyDirectionConstraints(const MouseEvent &e, Point<int> &delta)
     {
@@ -256,23 +262,6 @@ private:
                                              component), selectedComponents.end());
     }
     
-    void startDragging (Component* const componentToDrag, const MouseEvent& e)
-    {
-        jassert (componentToDrag != nullptr);
-        jassert (e.mods.isAnyMouseButtonDown()); // The event has to be a drag event!
-        
-        if (componentToDrag != nullptr)
-            mouseDownWithinTarget = e.getEventRelativeTo (componentToDrag).getMouseDownPosition();
-        
-        componentBeingDragged = componentToDrag;
-        
-        totalDragDelta = {0, 0};
-
-        constrainedDirection = noConstraint;
-
-        areaOfAllComponentsAtDragStart = getAreaOfSelectedComponents();
-    }
-    
     enum
     {
         noConstraint,
@@ -280,9 +269,10 @@ private:
         yAxisOnly
     } constrainedDirection;
 
+    const int minimumMovementToStartDrag = 10;
+
     bool constrainToParent {true};
     bool shiftConstrainsDirection {false};
-    bool shiftShowsGuides {true};
 
     bool didJustSelect {false};
     bool didStartDragging {false};
@@ -290,8 +280,6 @@ private:
     Point<int> mouseDownWithinTarget;
     Point<int> totalDragDelta;
 
-    Rectangle<int> areaOfAllComponentsAtDragStart;
-    
     std::vector<WeakReference<Component>> selectedComponents;
     Component * componentBeingDragged { nullptr };
     
