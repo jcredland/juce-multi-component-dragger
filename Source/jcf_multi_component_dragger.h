@@ -87,7 +87,8 @@ public:
     void deselectAll()
     {
         for (auto c: selectedComponents)
-            c->repaint();
+            if (c)
+                c->repaint();
         
         selectedComponents.clear();
     }
@@ -208,7 +209,8 @@ private:
         Rectangle<int> a = selectedComponents[0]->getBounds();
         
         for (auto comp: selectedComponents)
-            a = a.getUnion(comp->getBounds());
+            if (comp)
+                a = a.getUnion(comp->getBounds());
         
         return a;
     }
